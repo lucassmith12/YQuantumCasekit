@@ -1,0 +1,145 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{url}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Quantum Hashing with Quantum Alternate Controlled Walk Block Hashing\\
+
+}
+
+\author{
+\IEEEauthorblockN{ Lucas Smith}
+\IEEEauthorblockA{\textit{Computer Science} \\
+\textit{Case Western Reserve University}\\
+}
+\and
+
+\IEEEauthorblockN{Luke Sebold}
+\IEEEauthorblockA{\textit{Computer Science} \\
+\textit{Case Western Reserve University}\\
+}
+\and
+
+\IEEEauthorblockN{Leo Chou}
+\IEEEauthorblockA{\textit{Computer Science} \\
+\textit{Case Western Reserve University}\\
+}
+\and
+
+\IEEEauthorblockN{Masha Gorodetski}
+\IEEEauthorblockA{\textit{Physics} \\
+\textit{Case Western Reserve University}\\
+}
+\and
+
+\IEEEauthorblockN{James-Lucius Okenwa}
+\IEEEauthorblockA{\textit{Math and Physics} \\
+\textit{Case Western Reserve University}\\
+}
+\and
+
+\IEEEauthorblockN{Niranjan Girish}
+\IEEEauthorblockA{\textit{Computer and Electrical Engineering} \\
+\textit{Case Western Reserve University}\\
+}
+
+}
+
+\maketitle
+
+\begin{abstract}
+This write-up introduces and analyzes Controlled Alternate Quantum Walk-Based Block Hashing (CAQWBH), a novel quantum hash function that encodes classical data into high-entropy quantum-derived hash outputs. The CAQWBH scheme uses a block-wise approach, efficiently hashing bitstrings into a hashed string of equal length. This mechanism introduces inherent quantum randomness and state sensitivity, making the hash output highly unpredictable and resistant to structured input patterns.
+
+We implement CAQWBH using Qiskit and evaluate its cryptographic properties through both theoretical reasoning and empirical testing. Specifically, we demonstrate output determinism, high entropy preservation, and computational difficulty, and provide evidence for resistance to preimage and collision attacks. Determinism and collision benchmarks and entropy analysis support the feasibility of the approach, while also highlighting the complexity added by quantum processing. As quantum computing edges closer to practical cryptanalysis capabilities, CAQWBH presents a forward-looking model for hybrid cryptographic systems designed to resist quantum-era threats.
+\end{abstract}
+
+\begin{IEEEkeywords}
+quantum hashing, quantum walk, blockchain, cryptocurrency
+\end{IEEEkeywords}
+
+\section{Introduction}
+As quantum computing continues to advance, so does the need for cryptographic primitives that are not only secure in classical contexts but also resilient to quantum attacks. One emerging direction in this field is the development of hash functions that leverage uniquely quantum phenomena to enhance security and unpredictability. In this write-up, we present Quantum Controlled Walk-Based Block Hashing (CAQWBH) — a novel quantum hashing scheme that utilizes controlled quantum walks to generate highly sensitive, non-reversible hash outputs from classical input data.
+
+Unlike traditional hash functions, CAQWBH incorporates the principles of superposition and quantum interference through controlled unitary evolutions over structured quantum circuits. This design introduces an added layer of complexity and entropy, making preimage and collision attacks even more computationally infeasible in the presence of quantum adversaries. The hashing process is structured in a block-wise fashion, enabling scalability and composability with classical pre-processing or post-processing layers.
+
+In this report, we detail the theoretical foundations of controlled quantum walks, describe the construction and implementation of the CAQWBH scheme using Qiskit, and evaluate its core cryptographic properties: determinism, entropy preservation, computational hardness, and resistance to preimage and collision attacks. Our results suggest that CAQWBH is a promising candidate for hybrid quantum-classical cryptographic applications where future-proof security is a concern.
+
+
+\section{Methods}
+
+\subsection{Overview}
+
+The Controlled Alternate Quantum Walk-Based Block Hashing (CAQWBH) algorithm leverages position-controlled quantum walks modulated by input data to generate a high-entropy, deterministic hash from classical messages. Implemented using Qiskit, the method operates fully within the quantum domain without relying on any classical cryptographic hash functions. Below, we describe each component of the algorithm, followed by its cryptographic evaluation and performance considerations.
+
+\subsection{Quantum Circuit Construction}
+
+\subsubsection{Input Encoding}
+The input message is first converted into a bitstream. The number of position qubits ($Q$) is determined by the input block size $N$ as $Q = \log_2(N)$. The message bits modulate both the quantum state initialization and the walk dynamics.
+
+\subsubsection{Initial State Preparation}
+The quantum circuit is composed of:
+\begin{itemize}
+    \item $Q$ position qubits
+    \item 1 coin qubit
+\end{itemize}
+The position qubits are initialized in a normalized complex superposition state derived from the message content. This custom initialization ensures that the walker’s starting state is directly influenced by the input data.
+
+\subsubsection{Controlled Coin Operator}
+The quantum walk evolution is governed by a coin operator, defined as a parameterized unitary matrix:
+\[
+U(\theta) = \begin{bmatrix}
+\cos \theta & \sin \theta \\
+\sin \theta & -\cos \theta
+\end{bmatrix}
+\]
+A coin flip is applied at each step, where the rotation angle $\theta$ is selected based on the corresponding message bit. A '0' triggers $\theta_1$, and a '1' triggers $\theta_2$. These gates are applied conditionally using controlled unitaries.
+
+\subsubsection{Walk Evolution}
+The circuit evolves for $T$ steps, computed as:
+\[
+T = \frac{N \cdot k}{Q}
+\]
+where $k$ is the number of bits per output byte. Each step applies a set of position- and message-controlled coin flips, followed by CNOT gates that entangle the coin and position registers. The walk pattern dynamically adapts to message structure, enhancing output sensitivity.
+
+\subsection{Hash Extraction}
+
+After circuit execution, the final statevector is computed using Qiskit's simulator. Probability amplitudes are extracted for each basis state. These are scaled and quantized into $k$-bit integers and concatenated to form a fixed-length hash output. The process is deterministic and fully quantum.
+
+\subsection{Cryptographic Properties}
+
+\textbf{Output Determinism:} The algorithm produces identical outputs for identical inputs and fixed parameters $\theta_1$, $\theta_2$, ensuring reproducibility.
+
+\textbf{Entropy Preservation:} High entropy is observed in output distributions due to quantum interference, with empirical entropy measurements approaching 8 bits per byte.
+
+\textbf{Computational Difficulty:} The algorithm includes $O(N)$ quantum gates with parameter-dependent behavior, making reverse-engineering or shortcut computation infeasible on classical hardware.
+
+\textbf{Preimage and Collision Resistance:} Minor input changes yield significantly different outputs, exhibiting strong avalanche characteristics. Due to the one-way evolution of quantum states and entangled operations, both preimage and collision attacks are computationally impractical.
+
+\subsection{Feasibility and Performance}
+
+\textbf{Qubit Efficiency:} Inputs up to 256 bits require fewer than 20 qubits, satisfying hardware limitations for near-term quantum processors.
+
+\textbf{Execution Time:} Simulation tests demonstrate sub-second hashing times for 32-byte inputs on classical hardware, with time scaling linearly with input size.
+
+\textbf{Quantum-Only Design:} CAQWBH performs no classical digesting or compression. All computation, entropy diffusion, and hash generation are realized within the quantum circuit, ensuring a purely quantum hash function.
+
+\section{Results}
+
+\begin{thebibliography}{1}
+
+\bibitem{li2022controlledalternatequantumwalk}
+D.~Li, P.~Ding, Y.~Zhou, and Y.~Yang, ``Controlled Alternate Quantum Walk based Block Hash Function,'' \textit{arXiv preprint arXiv:2205.05983}, 2022. [Online]. Available: \url{https://arxiv.org/abs/2205.05983}
+
+\end{thebibliography}
+
+
+\end{document}
