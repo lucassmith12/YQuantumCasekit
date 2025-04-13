@@ -31,14 +31,15 @@ class QuantumHash():
         :thetas: a list of 8 values in radians satisfying  0 < theta < pi/2, theta != pi/4 
         """
         if hash_input: message_bytes = self.const_hash(message_bytes, thetas)
-        self.bstr = message_bytes
+
+        self.bstr = message_bytes 
         self.thetas = thetas
         self.N = len(message_bytes)  # Number of positions (2^q)
         self.k = 8   # Number of bits per position for hash output
         self.Q = int(np.log2(self.N)) # number of qubits
         self.T = self.N//self.Q   # Number of steps (entangling layers)
 
-        
+        # Convert bytes to bitstring
 
         # Step 1: Create initial state
         qc, pos, coin = self.create_initial_state(self.N, message_bytes)
@@ -68,6 +69,13 @@ class QuantumHash():
                 break
         return bytes(hash_bytes)  # Final hash as bytes
 
+    def const_hash(self, message_bytes: bytes, thetas: List[float]):                        #CHALLENGE
+        buffer = self.qacwb_hash(message_bytes[:32], thetas)                                #CHALLENGE
+        for l in range(1,int(np.floor(len(message_bytes)/32))):                             #CHALLENGE
+            buffer = bytes(x ^ y for x, y in zip(buffer, message_bytes[32*l:32*l+32]))      #CHALLENGE
+            buffer = self.qacwb_hash(buffer, thetas)                                        #CHALLENGE
+        return buffer                                                                       #CHALLENGE
+
     def main(self):
         # Example usage:
         message = b'\xb3\xb1\xc4\xd5\xe6\xf7\x89\x0a\x1b\x2c\x3d\x4e\x5f\x60\x71\x82\xc3\xa4\xb5\xc6\xd7\xe8\xf9\xa0\xb1\xc2\xd3\xe4\xf5\x06\x17\x28'
@@ -84,7 +92,7 @@ class QuantumHash():
 
         random.seed(8675309)
         start = time.time()
-        runs =1
+        runs = 1
         for _ in range(runs):
             # randbytes = random.randbytes(32) # can be used instead of message below
             hash_output = self.qacwb_hash(message, thetas)
@@ -92,16 +100,16 @@ class QuantumHash():
             print(f"As list of ints: {[int(b) for b in hash_output]}")
             print(f"Sorted: {sorted([int(b) for b in hash_output])}")
 
+        for _ in range(runs):                                                           #CHALLENGE
+            randbytes = random.randbytes(1024) # can be used instead of message below   #CHALLENGE
+            hash_output = self.const_hash(randbytes, thetas)                            #CHALLENGE
+            print(f"Hash (bytes): {hash_output}")                                       #CHALLENGE
+            print(f"As list of ints: {[int(b) for b in hash_output]}")                  #CHALLENGE
+            print(f"Sorted: {sorted([int(b) for b in hash_output])}")                   #CHALLENGE
+
         elapsed = time.time()-start
         print(f"Avg time to run ({runs} runs): {elapsed/runs}")
-        
-    # Optional Hashing to get a standard 256 bits
-    def const_hash(self, message_bytes: bytes, thetas: List[float]):                        #CHALLENGE
-        buffer = self.qacwb_hash(message_bytes[:32], thetas)                                #CHALLENGE
-        for l in range(1,int(np.floor(len(message_bytes)/32))):                             #CHALLENGE
-            buffer = bytes(x ^ y for x, y in zip(buffer, message_bytes[32*l:32*l+32]))      #CHALLENGE
-            buffer = self.qacwb_hash(buffer, thetas)                                        #CHALLENGE
-        return buffer   
+
 
 def coin_operator(theta):
         """Returns a 2x2 coin unitary matrix with parameter theta."""

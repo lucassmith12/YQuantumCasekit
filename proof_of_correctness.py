@@ -1,8 +1,9 @@
 from collections import defaultdict
-import time
 from main import QuantumHash
 import random
 import numpy as np
+from scipy.spatial import distance
+import scipy.stats
 
 #Modify these to your liking
 some_bytes = random.randbytes(32)
@@ -16,9 +17,8 @@ thetas = [
     np.arccos(2/3),
     np.arccos(5/8)
 ]
-trials = 100 
+trials = 1000 
 hasher = QuantumHash()
-
 
 
 # OUTPUT DETERMINISM #
@@ -41,11 +41,8 @@ def entropy_and_collisions():
     from collections import Counter
 
     print("Running trials (this may take some time):")
-    start = time.time()
     random_outputs = [hasher.qacwb_hash(random.randbytes(32), thetas) for _ in range(trials)]
-    end = time.time()
-    elapsed = end - start
-    print(f"Trials complete! Time elapsed: {elapsed}")
+    print("Trials complete!")
 
     byte_vals = b''.join(random_outputs)  # Flatten to a big byte string
 
@@ -54,7 +51,7 @@ def entropy_and_collisions():
     bit_counts = Counter(output_bits)
     bit_probs = [v / len(output_bits) for v in bit_counts.values()]
     bit_e = entropy(bit_probs, base=2)
-    print("Estimated bit-level entropy:", bit_e)
+    print("Estimated entropy:", bit_e)
 
     # Byte level
     counts = Counter(byte_vals)
@@ -104,8 +101,31 @@ def entropy_and_collisions():
     
 # run one of these two if you just want one or the other due to time constraints
 # determinism() 
-entropy_and_collisions()
+#entropy_and_collisions()
 
-
-
-
+def avalanch():
+    N = 1000
+    total = []
+    for i in range(N):
+        some_bytes = random.randbytes(32)
+        bits = ''.join(format (byte,'08b') for byte in some_bytes)
+        flip = random.randint(0,255)
+        if bits[flip] == '0':
+            temp = '1'
+        else:
+            temp = '0'
+        flipped = bits[:flip] + temp + bits[flip+1:]
+        bits_byte = int(bits,2).to_bytes(len(bits)//8,byteorder = 'big')
+        flipped_byte = int(flipped,2).to_bytes(len(flipped)//8,byteorder='big')
+        hash_bytes = hasher.qacwb_hash(bits_byte,thetas)
+        hash_flipped_bytes = hasher.qacwb_hash(flipped_byte,thetas)
+        hash_bits = ''.join(format (byte,'08b') for byte in hash_bytes)
+        hash_flipped = ''.join(format (byte,'08b') for byte in hash_flipped_bytes)
+        total.append(distance.hamming(list(hash_bits),list(hash_flipped)))
+        if i%20 ==0:
+            print(i)
+        total_np = np.array(total)
+    print(f'Average Avalanche value is {np.mean(total_np)}')
+    print(f'SEM is {scipy.stats.sem(total_np)}')
+    return total
+print(avalanch())
