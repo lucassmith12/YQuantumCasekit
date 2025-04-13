@@ -82,8 +82,8 @@ The Controlled Alternate Quantum Walk-Based Block Hashing (CAQWBH) algorithm lev
 
 \subsection{Quantum Circuit Construction}
 
-\subsubsection{Input Encoding}
-The input message is first converted into a bitstream. The number of position qubits ($Q$) is determined by the input block size $N$ as $Q = \log_2(N)$. The message bits modulate both the quantum state initialization and the walk dynamics.
+\subsubsection{Parameters}
+The number of position qubits ($Q$) is determined by the input block size $N$ as $Q = \log_2(N)$. The message bytes modulate both the quantum state initialization and the walk dynamics.
 
 \subsubsection{Initial State Preparation}
 The quantum circuit is composed of:
@@ -101,9 +101,9 @@ U(\theta) = \begin{bmatrix}
 \sin \theta & -\cos \theta
 \end{bmatrix}
 \]
-A coin flip is applied at each step, where the rotation angle $\theta$ is selected based on the corresponding message bit. Initially, we followed the procedure of Li et. al [1]. There, a '0' triggers $\theta_1$, and a '1' triggers $\theta_2$. These gates are applied conditionally using controlled unitaries. We found that this approach was too slow: hashes took up to 3 seconds in length. 
+A coin flip is applied at each step, where the rotation angle $\theta$ is selected based on the corresponding message byte. Initially, we followed the procedure of Li et. al [1]. There, bit encoding of the message stream is used where a '0' triggers $\theta_1$, and a '1' triggers $\theta_2$. These gates are applied conditionally using controlled unitaries. We found that this approach was too slow: hashes took up to 3 seconds in length. 
 
-Our innovation is to make coin flips at the byte level: we introduce a list of possible theta values $\theta_i, i\in [0,8]$. The value of the byte decides the value of theta. We thus decrease the number of C operation gates by a factor of 4, immensely speeding up our algorithm. Interestingly, our entropy values at the bit and byte level both increased when making this change, we estimate by around 5-10%. We hope to research this change more in the future, as time constraints prevent us from fully exploring this concept during the hackathon.
+Our innovation is to make coin flips at the byte level: we introduce a list of possible theta values $\theta_i, i\in [0,8]$. The value of the byte decides the value of theta. We thus decrease the number of C operation gates by a factor of 4, immensely speeding up our algorithm. Interestingly, our entropy values at the bit and byte level both increased when making this change, we estimate by around 5-10 percent. We hope to research this change more in the future, as time constraints prevent us from fully exploring this concept during the hackathon.
 
 \subsubsection{Walk Evolution}
 The circuit evolves for $T$ steps, computed as:
@@ -128,7 +128,7 @@ After circuit execution, the final statevector is computed using Qiskit's simula
 
 \subsection{Feasibility and Performance}
 
-\textbf{Qubit Efficiency:} Inputs up to 256 bits require fewer than 20 qubits, satisfying hardware limitations for near-term quantum processors.
+\textbf{Qubit Efficiency:} Inputs up to 256 bits require no more than six qubits, satisfying hardware limitations for near-term quantum processors.
 
 \textbf{Execution Time:} Simulation tests demonstrate sub-second hashing times for 32-byte inputs on classical hardware, with time scaling linearly with input size.
 
@@ -136,19 +136,19 @@ After circuit execution, the final statevector is computed using Qiskit's simula
 
 \section{Results}
 
-To evaluate the randomness and collision resistance of the Controlled Alternate Quantum Walk-based Block Hash function, we conducted 100 independent hashes using uniformly random 256-bit inputs.
+To evaluate the randomness and collision resistance of the Controlled Alternate Quantum Walk-based Block Hash function, we conducted 1000 independent hashes using uniformly random 256-bit inputs.
 
 The estimated entropy of the bit-level output distribution was found to be:
 \begin{itemize}
-    \item \textbf{Bit-level entropy:} 0.9999987276031818 (out of 1.0)
+    \item \textbf{Bit-level entropy:} 0.9999835635253684 (out of 1.0)
 \end{itemize}
 
 To further assess byte-level diffusion, we computed the Shannon entropy per output byte across the different hashes:
 \begin{itemize}
-    \item \textbf{Byte-level entropy:}  7.9363381185640325 (out of 8.0)
+    \item \textbf{Byte-level entropy:}  7.9905807651841885 (out of 8.0)
 \end{itemize}
 
-No repeated hash outputs were observed across the 100 hashes or during any of our tests, indicating strong collision resistance under the tested conditions:
+No repeated hash outputs were observed across the 1000 hashes or during any of our tests, indicating strong collision and second pre-image resistance under the tested conditions:
 \begin{itemize}
     \item \textbf{Total collisions:} 0
 \end{itemize}
@@ -157,8 +157,8 @@ These results suggest that the hash function preserves input entropy well, produ
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=\linewidth]{100.png}
-    \caption{Byte value distribution across 100 quantum hash outputs at selected byte positions. The uniformity suggests high entropy and no dominant byte patterns.}
+    \includegraphics[width=\linewidth]{1000.png}
+    \caption{Byte value distribution across 1000 quantum hash outputs at selected byte positions. The uniformity suggests high entropy and no dominant byte patterns.}
     \label{fig:byte_distribution}
 \end{figure}
 

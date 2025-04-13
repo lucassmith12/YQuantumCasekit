@@ -15,7 +15,7 @@ thetas = [
     np.arccos(2/3),
     np.arccos(5/8)
 ]
-trials = 100 
+trials = 1000 
 hasher = QuantumHash()
 
 
