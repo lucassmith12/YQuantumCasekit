@@ -57,9 +57,9 @@
 \maketitle
 
 \begin{abstract}
-This write-up introduces and analyzes Controlled Alternate Quantum Walk-Based Block Hashing (CAQWBH), a novel quantum hash function that encodes classical data into high-entropy quantum-derived hash outputs. The CAQWBH scheme uses a block-wise approach, efficiently hashing bitstrings into a hashed string of equal length. This mechanism introduces inherent quantum randomness and state sensitivity, making the hash output highly unpredictable and resistant to structured input patterns.
+This write-up introduces and analyzes Quantum Alternate Controlled Walk-Based Block Hashing (QAWCBH), a novel quantum hash function that encodes classical data into high-entropy quantum-derived hash outputs. The QAWCBH scheme uses a block-wise approach, efficiently hashing bitstrings into a hashed string of equal length. This mechanism introduces inherent quantum randomness and state sensitivity, making the hash output highly unpredictable and resistant to structured input patterns.
 
-We implement CAQWBH using Qiskit and evaluate its cryptographic properties through both theoretical reasoning and empirical testing. Specifically, we demonstrate output determinism, high entropy preservation, and computational difficulty, and provide evidence for resistance to preimage and collision attacks. Determinism and collision benchmarks and entropy analysis support the feasibility of the approach, while also highlighting the complexity added by quantum processing. As quantum computing edges closer to practical cryptanalysis capabilities, CAQWBH presents a forward-looking model for hybrid cryptographic systems designed to resist quantum-era threats.
+We implement QAWCBH using Qiskit and evaluate its cryptographic properties through both theoretical reasoning and empirical testing. Specifically, we demonstrate output determinism, high entropy preservation, and computational difficulty, and provide evidence for resistance to preimage and collision attacks. Determinism and collision benchmarks and entropy analysis support the feasibility of the approach, while also highlighting the complexity added by quantum processing. As quantum computing edges closer to practical cryptanalysis capabilities, QAWCBH presents a forward-looking model for hybrid cryptographic systems designed to resist quantum-era threats.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -67,18 +67,18 @@ quantum hashing, quantum walk, blockchain, cryptocurrency
 \end{IEEEkeywords}
 
 \section{Introduction}
-As quantum computing continues to advance, so does the need for cryptographic primitives that are not only secure in classical contexts but also resilient to quantum attacks. One emerging direction in this field is the development of hash functions that leverage uniquely quantum phenomena to enhance security and unpredictability. In this write-up, we present Quantum Controlled Walk-Based Block Hashing (CAQWBH) — a novel quantum hashing scheme that utilizes controlled quantum walks to generate highly sensitive, non-reversible hash outputs from classical input data.
+As quantum computing continues to advance, so does the need for cryptographic primitives that are not only secure in classical contexts but also resilient to quantum attacks. One emerging direction in this field is the development of hash functions that leverage uniquely quantum phenomena to enhance security and unpredictability. In this write-up, we present Quantum Controlled Walk-Based Block Hashing (QAWCBH) — a novel quantum hashing scheme that utilizes controlled quantum walks to generate highly sensitive, non-reversible hash outputs from classical input data.
 
-Unlike traditional hash functions, CAQWBH incorporates the principles of superposition and quantum interference through controlled unitary evolutions over structured quantum circuits. This design introduces an added layer of complexity and entropy, making preimage and collision attacks even more computationally infeasible in the presence of quantum adversaries. The hashing process is structured in a block-wise fashion, enabling scalability and composability with classical pre-processing or post-processing layers.
+Unlike traditional hash functions, QAWCBH incorporates the principles of superposition and quantum interference through controlled unitary evolutions over structured quantum circuits. This design introduces an added layer of complexity and entropy, making preimage and collision attacks even more computationally infeasible in the presence of quantum adversaries. The hashing process is structured in a block-wise fashion, enabling scalability and composability with classical pre-processing or post-processing layers.
 
-In this report, we detail the theoretical foundations of controlled quantum walks, describe the construction and implementation of the CAQWBH scheme using Qiskit, and evaluate its core cryptographic properties: determinism, entropy preservation, computational hardness, and resistance to preimage and collision attacks. Our results suggest that CAQWBH is a promising candidate for hybrid quantum-classical cryptographic applications where future-proof security is a concern.
+In this report, we detail the theoretical foundations of controlled quantum walks, describe the construction and implementation of the QAWCBH scheme using Qiskit, and evaluate its core cryptographic properties: determinism, entropy preservation, computational hardness, and resistance to preimage and collision attacks. Our results suggest that QAWCBH is a promising candidate for hybrid quantum-classical cryptographic applications where future-proof security is a concern.
 
 
 \section{Methods}
 
 \subsection{Overview}
 
-The Controlled Alternate Quantum Walk-Based Block Hashing (CAQWBH) algorithm leverages position-controlled quantum walks modulated by input data to generate a high-entropy, deterministic hash from classical messages. Implemented using Qiskit, the method operates fully within the quantum domain without relying on any classical cryptographic hash functions. Below, we describe each component of the algorithm, followed by its cryptographic evaluation and performance considerations.
+The Controlled Alternate Quantum Walk-Based Block Hashing (QAWCBH) algorithm leverages position-controlled quantum walks modulated by input data to generate a high-entropy, deterministic hash from classical messages. Implemented using Qiskit, the method operates fully within the quantum domain without relying on any classical cryptographic hash functions. Below, we describe each component of the algorithm, followed by its cryptographic evaluation and performance considerations.
 
 \subsection{Quantum Circuit Construction}
 
@@ -132,7 +132,7 @@ After circuit execution, the final statevector is computed using Qiskit's simula
 
 \textbf{Execution Time:} Simulation tests demonstrate sub-second hashing times for 32-byte inputs on classical hardware, with time scaling linearly with input size.
 
-\textbf{Quantum-Only Design:} CAQWBH performs no classical digesting or compression. All computation, entropy diffusion, and hash generation are realized within the quantum circuit, ensuring a purely quantum hash function.
+\textbf{Quantum-Only Design:} QAWCBH performs no classical digesting or compression. All computation, entropy diffusion, and hash generation are realized within the quantum circuit, ensuring a purely quantum hash function.
 
 \section{Results}
 
@@ -145,7 +145,7 @@ The estimated entropy of the bit-level output distribution was found to be:
 
 To further assess byte-level diffusion, we computed the Shannon entropy per output byte across the different hashes:
 \begin{itemize}
-    \item \textbf{Byte-level entropy:}  7.9905807651841885 (out of 8.0)
+    \item \textbf{Byte-level entropy:}  7.9379943451839114 (out of 8.0)
 \end{itemize}
 
 No repeated hash outputs were observed across the 1000 hashes or during any of our tests, indicating strong collision and second pre-image resistance under the tested conditions:
@@ -178,7 +178,35 @@ We have a new hash:
 \[H' = [224, 35, 21, 81, 14, 191, 190, 54]\]
 That is sufficiently independent of $H$. We therefore have a function highly sensitive to changes in input value.
 
+\subsection{Analysis of qHash}
+We analyzed qHash empirically using the same code as in Section 3. We found that qHash's Shannon entropy and runtime is inferior to that of QACWBH. 
 
+The estimated entropy of the bit-level output distribution for qHash was found to be:
+\begin{itemize}
+    \item \textbf{Bit-level entropy:} 0.9875243417280053 (out of 1.0)
+\end{itemize}
+
+To further assess byte-level diffusion, we computed the Shannon entropy per output byte across the different hashes:
+\begin{itemize}
+    \item \textbf{Byte-level entropy:}  6.3874920798759325 (out of 8.0)
+\end{itemize}
+
+We also found that qHash had a high rate of collisions (ran on 100 shots):
+\begin{itemize}
+    \item \textbf{Total collisions:} 18
+\end{itemize}
+
+Lastly, qHash has a significantly higher runtime: over 100 shots QCAWBH ran in 6 seconds. qHash ran in 40 seconds.
+
+\section{Conclusion}
+
+In this study, we introduced QAWCBH, a novel quantum hashing algorithm leveraging controlled alternate quantum walks with a parameterized coin operator guided by classical input data. Our implementation demonstrates that incorporating a wider range of coin flip angles based on full-byte values, rather than binary bit flips, not only accelerates hashing performance but also increases entropy at both the bit and byte levels.
+
+Empirical evaluation of 1000 random inputs revealed nearly maximal entropy (0.99998 bit-level, 7.93 byte-level), with zero collisions observed. These results strongly support the cryptographic soundness of the QAWCBH algorithm, indicating robustness against preimage and collision attacks.
+
+Moreover, in direct comparison with qHash under identical conditions, QAWCBH significantly outperformed in all tested metrics. Specifically, qHash demonstrated lower entropy (0.987 bit-level, 6.38 byte-level), a substantially higher number of collisions (18 collisions over 100 trials), and a much longer average runtime. These findings highlight the superior efficiency, unpredictability, and security characteristics of QAWCBH.
+
+In conclusion, our results suggest that QAWCBH is not only a viable quantum hashing method but also a substantial improvement over prior quantum hash functions like qHash. This positions QAWCBH as a strong candidate for post-quantum cryptographic primitives in both theoretical and practical domains. Future work will explore scaling strategies, further entropy tuning, and deployment on real quantum hardware.
 
 \begin{thebibliography}{1}
 
