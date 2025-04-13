@@ -22,3 +22,6 @@ Additionally, we perform an avalanche analysis of our hash function, where we we
 ### test\_qhash.py
 
 Here we copy-pasted proof of correctness and modified it for testing qHash. Simply run the file to get our results.  
+
+### All others
+Artifacts of accidentally pushing that I can't get rid of in time. Please ignore qHash.py for example, it is the same as the original.
