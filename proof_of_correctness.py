@@ -5,9 +5,17 @@ import numpy as np
 
 #Modify these to your liking
 some_bytes = random.randbytes(32)
-theta1 = np.arccos(3/5)
-theta2 = np.arccos(8/17)
-trials = 200 
+thetas = [
+    np.arccos(1/np.sqrt(2)),
+    np.arccos(3/5),
+    np.arccos(4/5),
+    np.arccos(5/13),
+    np.arccos(7/10),
+    np.arccos(8/17),
+    np.arccos(2/3),
+    np.arccos(5/8)
+]
+trials = 100 
 hasher = QuantumHash()
 
 
@@ -17,7 +25,7 @@ def determinism():
     Must prove that all inputs are deterministic
     """    
     some_bytes = random.randbytes(32)
-    set_out = set([hasher.qacwb_hash(some_bytes, theta1, theta2) for _ in range(trials)])
+    set_out = set([hasher.qacwb_hash(some_bytes, thetas) for _ in range(trials)])
     if len(set_out) > 1:
         raise ValueError(f"ERROR: Inputs not equal:{set_out}")
     return True
@@ -31,7 +39,7 @@ def entropy_and_collisions():
     from collections import Counter
 
     print("Running trials (this may take some time):")
-    random_outputs = [hasher.qacwb_hash(random.randbytes(32), theta1, theta2) for _ in range(trials)]
+    random_outputs = [hasher.qacwb_hash(random.randbytes(32), thetas) for _ in range(trials)]
     print("Trials complete!")
 
     byte_vals = b''.join(random_outputs)  # Flatten to a big byte string

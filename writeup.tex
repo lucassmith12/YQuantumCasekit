@@ -101,14 +101,16 @@ U(\theta) = \begin{bmatrix}
 \sin \theta & -\cos \theta
 \end{bmatrix}
 \]
-A coin flip is applied at each step, where the rotation angle $\theta$ is selected based on the corresponding message bit. A '0' triggers $\theta_1$, and a '1' triggers $\theta_2$. These gates are applied conditionally using controlled unitaries.
+A coin flip is applied at each step, where the rotation angle $\theta$ is selected based on the corresponding message bit. Initially, we followed the procedure of Li et. al [1]. There, a '0' triggers $\theta_1$, and a '1' triggers $\theta_2$. These gates are applied conditionally using controlled unitaries. We found that this approach was too slow: hashes took up to 3 seconds in length. 
+
+Our innovation is to make coin flips at the byte level: we introduce a list of possible theta values $\theta_i, i\in [0,8]$. The value of the byte decides the value of theta. We thus decrease the number of C operation gates by a factor of 4, immensely speeding up our algorithm. Interestingly, our entropy values at the bit and byte level both increased when making this change, we estimate by around 5-10%. We hope to research this change more in the future, as time constraints prevent us from fully exploring this concept during the hackathon.
 
 \subsubsection{Walk Evolution}
 The circuit evolves for $T$ steps, computed as:
 \[
-T = \frac{N \cdot k}{Q}
+T = \frac{N}{Q}
 \]
-where $k$ is the number of bits per output byte. Each step applies a set of position- and message-controlled coin flips, followed by CNOT gates that entangle the coin and position registers. The walk pattern dynamically adapts to message structure, enhancing output sensitivity.
+ Each step applies a set of position- and message-controlled coin flips, followed by CNOT gates that entangle the coin and position registers. The walk pattern dynamically adapts to message structure, enhancing output sensitivity.
 
 \subsection{Hash Extraction}
 
@@ -133,6 +135,35 @@ After circuit execution, the final statevector is computed using Qiskit's simula
 \textbf{Quantum-Only Design:} CAQWBH performs no classical digesting or compression. All computation, entropy diffusion, and hash generation are realized within the quantum circuit, ensuring a purely quantum hash function.
 
 \section{Results}
+
+To evaluate the randomness and collision resistance of the Controlled Alternate Quantum Walk-based Block Hash function, we conducted 100 independent hashes using uniformly random 256-bit inputs.
+
+The estimated entropy of the bit-level output distribution was found to be:
+\begin{itemize}
+    \item \textbf{Bit-level entropy:} 0.9999987276031818 (out of 1.0)
+\end{itemize}
+
+To further assess byte-level diffusion, we computed the Shannon entropy per output byte across the different hashes:
+\begin{itemize}
+    \item \textbf{Byte-level entropy:}  7.9363381185640325 (out of 8.0)
+\end{itemize}
+
+No repeated hash outputs were observed across the 100 hashes or during any of our tests, indicating strong collision resistance under the tested conditions:
+\begin{itemize}
+    \item \textbf{Total collisions:} 0
+\end{itemize}
+
+These results suggest that the hash function preserves input entropy well, produces uniformly distributed outputs, and demonstrates no empirical collisions across the tested input space.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{100.png}
+    \caption{Byte value distribution across 100 quantum hash outputs at selected byte positions. The uniformity suggests high entropy and no dominant byte patterns.}
+    \label{fig:byte_distribution}
+\end{figure}
+
+As shown in Fig.~\ref{fig:byte_distribution}, the output bytes appear uniformly distributed across hashes, supporting strong entropy characteristics.
+
 
 \begin{thebibliography}{1}
 

@@ -1,5 +1,6 @@
 import random
 import time
+from typing import List
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.quantum_info import Statevector
 from qiskit.circuit.library import UnitaryGate, Initialize
@@ -24,28 +25,29 @@ class QuantumHash():
 
         return qc, pos, coin
 
-    def qacwb_hash(self, message_bytes: bytes, theta1: float, theta2: float):
-        """Implements the Controlled Alternate Quantum Walk-based Block Hash."""
+    def qacwb_hash(self, message_bytes: bytes, thetas: List[float]):
+        """
+        Implements the Controlled Alternate Quantum Walk-based Block Hash.
+        :thetas: a list of 8 values in radians satisfying  0 < theta < pi/2, theta != pi/4 
+        """
         self.bstr = message_bytes
-        self.theta1 = theta1 
-        self.theta2 = theta2
+        self.thetas = thetas
         self.N = len(message_bytes)  # Number of positions (2^q)
         self.k = 8   # Number of bits per position for hash output
         self.Q = int(np.log2(self.N)) # number of qubits
-        self.T = self.N*self.k//self.Q   # Number of steps (entangling layers)
+        self.T = self.N//self.Q   # Number of steps (entangling layers)
 
         # Convert bytes to bitstring
-        full_message_bits = ''.join(f'{byte:08b}' for byte in message_bytes)
 
         # Step 1: Create initial state
         qc, pos, coin = self.create_initial_state(self.N, message_bytes)
 
         # Global Unitary
         for t in range(self.T):
-            step_msg = full_message_bits[t * self.Q:(t + 1) * self.Q]
-            for idx, bit in enumerate(step_msg):
+            step_msg = message_bytes[t:(t + 1) ]
+            for idx, byte in enumerate(step_msg):
                 # C(t)
-                theta = theta1 if bit == '0' else theta2
+                theta = thetas[byte % 8]
                 unitary = UnitaryGate(coin_operator(theta), label=f'Cθ={theta:.2f}')
                 qc.append(unitary.control(1), [pos[idx], coin[0]])
                 # S_idx
@@ -67,17 +69,24 @@ class QuantumHash():
 
     def main(self):
         # Example usage:
-        message = b'\xa3\xb1\xc4\xd5\xe6\xf7\x89\x0a\x1b\x2c\x3d\x4e\x5f\x60\x71\x82\x93\xa4\xb5\xc6\xd7\xe8\xf9\xa0\xb1\xc2\xd3\xe4\xf5\x06\x17\x28'
-
-        theta1 = np.arccos(3/5)  # Sample values in (0, pi/2)
-        theta2 = np.arccos(8/17)
+        message = b'\xb3\xb1\xc4\xd5\xe6\xf7\x89\x0a\x1b\x2c\x3d\x4e\x5f\x60\x71\x82\xc3\xa4\xb5\xc6\xd7\xe8\xf9\xa0\xb1\xc2\xd3\xe4\xf5\x06\x17\x28'
+        thetas = [
+            np.arccos(1/np.sqrt(2)),
+            np.arccos(3/5),
+            np.arccos(4/5),
+            np.arccos(5/13),
+            np.arccos(7/10),
+            np.arccos(8/17),
+            np.arccos(2/3),
+            np.arccos(5/8)
+        ]
 
         random.seed(8675309)
         start = time.time()
         runs =1
         for _ in range(runs):
-            randbytes = random.randbytes(32) # or message
-            hash_output = self.qacwb_hash(randbytes, theta1, theta2)
+            # randbytes = random.randbytes(32) # can be used instead of message below
+            hash_output = self.qacwb_hash(message, thetas)
             print(f"Hash (bytes): {hash_output}")
             print(f"As list of ints: {[int(b) for b in hash_output]}")
             print(f"Sorted: {sorted([int(b) for b in hash_output])}")
@@ -92,3 +101,6 @@ def coin_operator(theta):
             [np.cos(theta), np.sin(theta)],
             [np.sin(theta), -np.cos(theta)]
         ])
+
+if __name__ == "__main__":
+    QuantumHash().main()
