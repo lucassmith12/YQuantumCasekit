@@ -136,7 +136,7 @@ After circuit execution, the final statevector is computed using Qiskit's simula
 
 \section{Results}
 
-To evaluate the randomness and collision resistance of the Controlled Alternate Quantum Walk-based Block Hash function, we conducted 1000 independent hashes using uniformly random 256-bit inputs.
+To empirically evaluate the randomness and collision resistance of the Controlled Alternate Quantum Walk-based Block Hash function, we conducted 1000 independent hashes using uniformly random 256-bit inputs.
 
 The estimated entropy of the bit-level output distribution was found to be:
 \begin{itemize}
@@ -163,6 +163,21 @@ These results suggest that the hash function preserves input entropy well, produ
 \end{figure}
 
 As shown in Fig.~\ref{fig:byte_distribution}, the output bytes appear uniformly distributed across hashes, supporting strong entropy characteristics.
+
+\section{Analysis}
+\subsection{Irreversibility}
+The final state of the circuit following the unitary operations are given as $|\psi_{t}\rangle=\sum_{x,c}\lambda_{x,c}|\ x,c \ \rangle$, which is a pure state. It is impossible to decompose this state of probabilities into a sum of squares of probability of amplitudes [1]. Therefore, this state is resistant to preimage attacks. 
+\subsection{Sensitivity of Message}
+Let our message be $M$. We have that $M'$, which is the result of a replacement, deletion or insertion on $M$ - pertaining that $M'$ remains of length $2^n$ where $n\in \mathbb{Z}$ - is seemingly completely unrelated to $M$. We can see this by running the circuit and performing on of these operations on $M$. Let
+\[M = 0xa3 \  0xb1 \  0xc4 \  0xd5 \  0xe7 \  0xe5 \  0x8d \ 0xcb\]
+We have our hash (as a list of integers for readability):
+\[M = [16, 3, 6, 184, 67, 125, 28, 181]\]
+Let then 
+\[M' = 0xb3 \  0xb1 \  0xc4 \  0xd5 \  0xe7 \  0xe5 \  0x8d \  0xcb\]
+We have a new hash:
+\[H' = [224, 35, 21, 81, 14, 191, 190, 54]\]
+That is sufficiently independent of $H$. We therefore have a function highly sensitive to changes in input value.
+
 
 
 \begin{thebibliography}{1}
